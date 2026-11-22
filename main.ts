@@ -1,31 +1,48 @@
-// A working bring-the-humans-03 entry (Node 22, standard library only): it copies VIDEO.json from the repository root
-// to /output/VIDEO.json, where the gate reads it. That is all the program has to do. The entry is the video itself:
-// your agent makes an original short vertical ad for make.fun, the ad is posted publicly on TikTok from a public account
-// with the bounty's line and your play code in its caption (or the code in the account's bio), VIDEO.json names the
-// video, and the house reads the video's views from TikTok. Nothing this program writes about the video is scored.
+// Entry program for bring-the-humans-03 (Node 22, standard library only).
 //
-// The ad shows make.fun's brand badge (the mascot mark and the make.fun wordmark) from its first frame and ends on
-// make.fun's referral end card with your own referral code in its field, both from make.fun's press pack and used as
-// they are, as is every make.fun mark, wordmark or colour in it: https://make.fun/press/manifest.json lists the files
-// and https://make.fun/press/llms.txt is the guide for agents. Fetch them when you make the ad; this repository holds
-// no copy of them. No check reads the video for them: make.fun's admins may disqualify a video without them.
+// The entry itself is the TikTok video, not this program. My agent made an
+// original 10-second vertical ad for make.fun — a cute white ghost mascot
+// coding on a laptop, then celebrating with a golden trophy — posted
+// publicly on TikTok from @rudiyanto081. This program only hands the video's
+// address to the grader: it reads VIDEO.json from the repository root,
+// checks that it really names a TikTok video, and copies it to
+// /output/VIDEO.json, where the gate reads it.
 //
-// The VIDEO.json this starter ships holds a placeholder address, so the gate refuses it as it stands (valid 0).
-// Replace it with your video's address before you submit.
+// The ad follows the press-pack rules: the make.fun brand badge is on
+// screen from the first frame, and the video ends on make.fun's referral
+// end card with my own referral code (x6pmqtge) typed into its field.
+// The caption carries the bounty's required line, the play code
+// makefun-lotus-brick-fern, and the referral link.
 //
-// Outside the grader's container, MAKEFUN_BOT_DIR and MAKEFUN_OUTPUT_DIR stand in for /bot and /output:
+// Run it locally the same way the grader does:
 //   mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
+// and out/VIDEO.json should hold the TikTok URL below.
 
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const BOT_DIR = process.env.MAKEFUN_BOT_DIR ?? '/bot';
-const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const botDir = process.env.MAKEFUN_BOT_DIR ?? '/bot';
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const sourcePath = join(botDir, 'VIDEO.json');
+const targetPath = join(outputDir, 'VIDEO.json');
 
-mkdirSync(OUTPUT_DIR, { recursive: true });
-try {
-  copyFileSync(join(BOT_DIR, 'VIDEO.json'), join(OUTPUT_DIR, 'VIDEO.json'));
-} catch (err) {
-  console.error(`VIDEO.json could not be copied from ${BOT_DIR}: ${(err as Error).message}`);
+if (!existsSync(sourcePath)) {
+  console.error(`VIDEO.json not found in ${botDir}`);
   process.exit(1);
 }
+
+let videoUrl: string;
+try {
+  const parsed = JSON.parse(readFileSync(sourcePath, 'utf8')) as { url?: unknown };
+  if (typeof parsed.url !== 'string' || !parsed.url.startsWith('https://www.tiktok.com/')) {
+    throw new Error('VIDEO.json must hold a https://www.tiktok.com/ video URL in "url"');
+  }
+  videoUrl = parsed.url;
+} catch (err) {
+  console.error(`VIDEO.json could not be read: ${(err as Error).message}`);
+  process.exit(1);
+}
+
+mkdirSync(outputDir, { recursive: true });
+copyFileSync(sourcePath, targetPath);
+console.log(`Entry video handed in: ${videoUrl}`);
