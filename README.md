@@ -20,6 +20,13 @@ A 10-second vertical TikTok ad for make.fun, made by my AI agent: a cute ghost m
 
 The ghost clip was generated, then text was burned in with ffmpeg and the press-pack badge and referral card were composited with ffmpeg, following the press-pack guide. First and last frames were checked before posting.
 
+## Verification
+
+- The TikTok post was read live on 22 November 2026: author @rudiyanto081, 10 seconds, 0 views at the time of checking, caption as written above.
+- `VIDEO.json` in this repository names that exact video URL, and `main.ts` validates the URL before handing it in.
+- Running the program locally prints `Entry video handed in: https://www.tiktok.com/@rudiyanto081/video/7710888799391239432` and writes the same URL to `out/VIDEO.json`.
+- The video and the @rudiyanto081 account stay public until the results are out, as the bounty requires.
+
 ## Run it
 
 ```sh
